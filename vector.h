@@ -23,6 +23,13 @@ typedef struct {
 	float w;
 } vec4_t;
 
+typedef struct {
+	int x;
+	int y;
+	float z;
+	float w;
+} vertex_projected;
+
 vec3_t vec3_zero();
 
 vec3_t vec3_rotate_x(vec3_t v, float angle);
@@ -50,3 +57,5 @@ vec3_t vec4_to_vec3(vec4_t v);
 vec4_t vec3_to_vec4(vec3_t v);
 
 vec2_t vec2_from_vec4(vec4_t v);
+
+vec2_t vec2_from_projected(vertex_projected v);

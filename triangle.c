@@ -19,6 +19,25 @@ float get_max(float x, float y) {
 	return x > y ? x : y;
 }
 
+
+void vertex_swap(vertex_projected* a, vertex_projected* b) {
+	vertex_projected temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
+void int_swap(int* a, int* b) {
+	int c = *a;
+	*a = *b;
+	*b = c;
+}
+
+void float_swap(float* a, float* b) {
+	float c = *a;
+	*a = *b;
+	*b = c;
+}
+
 void draw_flat_bottom2(vec2_int vertex, vec2_int edge1, vec2_int edge2, uint32_t color) {
 	float inv_slope_1 = (edge1.x - vertex.x) / (float)(edge1.y - vertex.y);
 	float inv_slope_2 = (edge2.x - vertex.x) / (float)(edge2.y - vertex.y);
@@ -170,84 +189,67 @@ void draw_flat(vec2_int vertice, vec2_int edge1, vec2_int edge2, uint32_t color)
 }
 
 
-void draw_filled_triangle(triangle_int triangle, uint32_t color) {
-	if (triangle.points[0].y == triangle.points[1].y && triangle.points[1].y == triangle.points[2].y) {
-		int c = 10;
-		// just a line
+void draw_filled_triangle(vertex_projected vertex0, vertex_projected vertex1, vertex_projected vertex2, 
+	uint32_t color, float intensity) {
+	if (vertex0.y > vertex1.y) {
+		vertex_swap(&vertex0, &vertex1);
 	}
-	else if (triangle.points[0].y == triangle.points[1].y) {
-		draw_flat(triangle.points[2], triangle.points[0], triangle.points[1], color);
-	}
-	else if (triangle.points[0].y == triangle.points[2].y) {
-		draw_flat(triangle.points[1], triangle.points[0], triangle.points[2], color);
-	}
-	else if(triangle.points[1].y == triangle.points[2].y) {
-		draw_flat(triangle.points[0], triangle.points[1], triangle.points[2], color);
-	}
-	else {
-		int maxIndex = 0;
-		vec2_int max = triangle.points[maxIndex];
 
-		int minIndex = 1;
-		vec2_int min = triangle.points[minIndex];
+	if (vertex1.y > vertex2.y) {
+		vertex_swap(&vertex1, &vertex2);
+	}
 
-		if (triangle.points[1].y > max.y) {
-			max = triangle.points[1];
-			maxIndex = 1;
+	if (vertex0.y > vertex1.y) {
+		vertex_swap(&vertex0, &vertex1);
+	}
+
+	float inv_slope_1 = 0;
+	if (vertex1.y - vertex0.y != 0)
+		inv_slope_1 = (float)(vertex1.x - vertex0.x) / abs(vertex1.y - vertex0.y);
+
+	float inv_slope_2 = 0;
+	if (vertex2.y - vertex0.y != 0)
+		inv_slope_2 = (float)(vertex2.x - vertex0.x) / abs(vertex2.y - vertex0.y);
+
+	for (int y = vertex0.y; y <= vertex1.y; y++)
+	{
+		int x_start = vertex1.x + (y - vertex1.y) * inv_slope_1;
+		int x_end = vertex0.x + (y - vertex0.y) * inv_slope_2;
+
+		if (x_start > x_end) {
+			int_swap(&x_start, &x_end);
 		}
 
-		if (triangle.points[2].y > max.y) {
-			max = triangle.points[2];
-			maxIndex = 2;
-		}
-
-		if (triangle.points[0].y < min.y) {
-			min = triangle.points[0];
-			minIndex = 0;
-		}
-
-		if (triangle.points[2].y < min.y) {
-			min = triangle.points[2];
-			minIndex = 2;
-		}
-
-		int middleIndex = 2;
-		vec2_int middle = triangle.points[middleIndex];
-		for (size_t i = 0; i < 3; i++)
+		for (int x = x_start; x < x_end; x++)
 		{
-			if (minIndex != i && maxIndex != i) {
-				middleIndex = i;
-				middle = triangle.points[middleIndex];
-				break;
-			}
+			draw_pixel2(x, y, vertex0, vertex1, vertex2, color, intensity);
+		}
+	}
+
+	inv_slope_1 = 0;
+	if (vertex2.y - vertex1.y != 0)
+		inv_slope_1 = (float)(vertex2.x - vertex1.x) / abs(vertex2.y - vertex1.y);
+
+	inv_slope_2 = 0;
+	if (vertex2.y - vertex0.y != 0)
+		inv_slope_2 = (float)(vertex2.x - vertex0.x) / abs(vertex2.y - vertex0.y);
+
+	for (int y = vertex1.y; y <= vertex2.y; y++)
+	{
+		int x_start = vertex1.x + (y - vertex1.y) * inv_slope_1;
+		int x_end = vertex0.x + (y - vertex0.y) * inv_slope_2;
+
+		if (x_start > x_end) {
+			int_swap(&x_start, &x_end);
 		}
 
-		int middlePointX = (float)(min.x - max.x) * (middle.y - max.y) / (float)(min.y - max.y) + max.x;
-		vec2_int m = { middlePointX, middle.y };
-
-		draw_flat_bottom2(min, middle, m, color);
-		//draw_flat_bottom(min, middle, m, color);
-		draw_flat_top2(max, middle, m, color);
+		for (int x = x_start; x < x_end; x++)
+		{
+			draw_pixel2(x, y, vertex0, vertex1, vertex2, color, intensity);
+		}
 	}
 }
 
-void vertex_swap(vertex_projected* a, vertex_projected* b) {
-	vertex_projected temp = *a;
-	*a = *b;
-	*b = temp;
-}
-
-void int_swap(int* a, int* b) {
-	int c = *a;
-	*a = *b;
-	*b = c;
-}
-
-void float_swap(float* a, float* b) {
-	float c = *a;
-	*a = *b;
-	*b = c;
-}
 
 void draw_textured_triangle(vertex_projected vertex0 , float u0, float v0,
 	vertex_projected vertex1, float u1, float v1,
@@ -285,16 +287,16 @@ void draw_textured_triangle(vertex_projected vertex0 , float u0, float v0,
 
 	float inv_slope_1 = 0; 
 	if (vertex1.y - vertex0.y != 0)
-		inv_slope_1 = (float)(x1 - x0) / abs(y1 - y0);
+		inv_slope_1 = (float)(vertex1.x - vertex0.x) / abs(vertex1.y - vertex0.y);
 
 	float inv_slope_2 = 0;
-	if (y2 - y0 != 0)
-		inv_slope_2 = (float)(x2 - x0) / abs(y2 - y0);
+	if (vertex2.y - vertex0.y != 0)
+		inv_slope_2 = (float)(vertex2.x - vertex0.x) / abs(vertex2.y -vertex0.y);
 
-	for (int y = y0; y <= y1; y++)
+	for (int y = vertex0.y; y <= vertex1.y; y++)
 	{
-		int x_start = x1 + (y - y1) * inv_slope_1;
-		int x_end = x0 + (y - y0) * inv_slope_2;
+		int x_start = vertex1.x + (y - vertex1.y) * inv_slope_1;
+		int x_end = vertex0.x + (y - vertex0.y) * inv_slope_2;
 
 		if (x_start > x_end) {
 			int_swap(&x_start, &x_end);
@@ -302,22 +304,22 @@ void draw_textured_triangle(vertex_projected vertex0 , float u0, float v0,
 
 		for (int x = x_start; x < x_end; x++)
 		{
-			draw_texel(x, y, point_a, point_b, point_c, a_uv, b_uv, c_uv, texture, intensity);
+			draw_texel(x, y, vertex0, vertex1, vertex2, a_uv, b_uv, c_uv, texture, intensity);
 		}
 	}
 
 	inv_slope_1 = 0;
-	if (y2 - y1 != 0)
-		inv_slope_1 = (float)(x2 - x1) / abs(y2 - y1);
+	if (vertex2.y - vertex1.y != 0)
+		inv_slope_1 = (float)(vertex2.x - vertex1.x) / abs(vertex2.y - vertex1.y);
 
 	inv_slope_2 = 0;
-	if (y2 - y0 != 0)
-		inv_slope_2 = (float)(x2 - x0) / abs(y2 - y0);
+	if (vertex2.y - vertex0.y != 0)
+		inv_slope_2 = (float)(vertex2.x - vertex0.x) / abs(vertex2.y -  vertex0.y);
 
-	for (int y = y1; y <= y2; y++)
+	for (int y = vertex1.y; y <= vertex2.y; y++)
 	{
-		int x_start = x1 + (y - y1) * inv_slope_1;
-		int x_end = x0 + (y - y0) * inv_slope_2;
+		int x_start = vertex1.x + (y - vertex1.y) * inv_slope_1;
+		int x_end = vertex0.x + (y - vertex0.y) * inv_slope_2;
 
 		if (x_start > x_end) {
 			int_swap(&x_start, &x_end);
@@ -325,16 +327,33 @@ void draw_textured_triangle(vertex_projected vertex0 , float u0, float v0,
 
 		for (int x = x_start; x < x_end; x++)
 		{
-			draw_texel(x, y, point_a, point_b, point_c, a_uv, b_uv, c_uv, texture, intensity);
+			draw_texel(x, y, vertex0, vertex1, vertex2, a_uv, b_uv, c_uv, texture, intensity);
 		}
 	}
 }
 
-void draw_texel(int x, int y, vec4_t a, vec4_t b, vec4_t c, tex2_t a_uv, tex2_t b_uv, tex2_t c_uv, uint32_t* texture, float intensity) {
+void draw_pixel2(int x, int y, vertex_projected a, vertex_projected b, vertex_projected c, uint32_t color, float intensity) {
+	vec2_t p = { x, y };
+	vec2_t point_a = vec2_from_projected(a);
+	vec2_t point_b = vec2_from_projected(b);
+	vec2_t point_c = vec2_from_projected(c);
+	vec3_t weights = barycentric_weights(point_a, point_b, point_c, p);
+
+	float reciprocal_w = 1 / a.w * weights.x + 1 / b.w * weights.y + 1 / c.w * weights.z;
+
+	reciprocal_w = 1 - reciprocal_w;
+	if (z_buffer[x + y * window_width] > reciprocal_w) {
+		z_buffer[x + y * window_width] = reciprocal_w;
+		vec2_int p1 = { x,y };
+		draw_pixel(p1, light_apply_intensity(color, intensity));
+	}
+}
+
+void draw_texel(int x, int y, vertex_projected a, vertex_projected b, vertex_projected c, tex2_t a_uv, tex2_t b_uv, tex2_t c_uv, uint32_t* texture, float intensity) {
 	vec2_t p = { x,y };
-	vec2_t point_a = vec2_from_vec4(a);
-	vec2_t point_b = vec2_from_vec4(b);
-	vec2_t point_c = vec2_from_vec4(c);
+	vec2_t point_a = vec2_from_projected(a);
+	vec2_t point_b = vec2_from_projected(b);
+	vec2_t point_c = vec2_from_projected(c);
 	vec3_t weights = barycentric_weights(point_a, point_b, point_c, p);
 
 	float u;

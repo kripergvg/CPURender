@@ -17,8 +17,11 @@ triangle_t* triangles_to_render = NULL;
 vec3_t camera_position = { 0,0, 0 };
 vec3_t cube_rotation = { .x = 0, .y = 0, .z = 0 };
 
+#define MAX_TRIANGLES 100000
+
 bool is_running = false;
 int previous_frame_time = 0;
+int triangles_count = 0;
 
 mat4_t proj_matrix;
 
@@ -31,7 +34,7 @@ typedef enum ViewModeType {
 
 
 ViewMode view_mode =  Wireframe | Textured;
-bool culling = false;
+bool culling = true;
 
 void setup(void) {
 	color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * window_width * window_height);
@@ -45,6 +48,7 @@ void setup(void) {
 	);
 
 	z_buffer = (float*)malloc(sizeof(float) * window_width * window_height);
+	triangles_to_render = (triangle_t*)malloc(sizeof(triangle_t) * MAX_TRIANGLES);
 
 	float xFov = 60 * M_PI / 180;
 	float yFov = 60 * M_PI / 180;
@@ -58,8 +62,8 @@ void setup(void) {
 	//texture_height = 64;
 
 	//load_cube();
-	load_png_texture_data("./crab.png");
-	load_obj("./crab.obj");
+	load_png_texture_data("./drone.png");
+	load_obj("./drone.obj");
 }
 
 void process_input(void) {
@@ -119,9 +123,7 @@ void update(void) {
 	}
 
 	previous_frame_time = SDL_GetTicks();
-
-	triangles_to_render = NULL;
-
+	
 	mesh.rotation.y += 0.01;
 	//mesh.rotation.x += 0.01;
 	mesh.translation.z = 5;
@@ -154,7 +156,6 @@ void update(void) {
 			transformed[v_index] = transformed_vertex;	
 		}
 
-		projected_triangle.avg_depth = (transformed[0].z + transformed[1].z + transformed[2].z) / 3.0;
 		projected_triangle.uniq = mesh_face.uniq;
 
 		vec3_t to_camera = vec3_sub(camera_position, transformed[0]);
@@ -184,11 +185,15 @@ void update(void) {
 				projected.y += (window_height / 2.0);
 
 	
-				vec4_t tp = { projected.x, projected.y, projected.z, projected.w };
+				vertex_projected tp = { projected.x, projected.y, projected.z, projected.w };
 
 				projected_triangle.points[v_index] = tp;
 			}
-			array_push(triangles_to_render, projected_triangle);
+			triangles_to_render[triangles_count] = projected_triangle;
+			triangles_count++;
+			if (triangles_count > MAX_TRIANGLES) {
+
+			}
 		}
 	}
 }
@@ -215,24 +220,10 @@ void draw_test(void) {
 	//draw_flat_top(min, left, right, 0xFF00FF00);
 }
 
-int sort_by_depth(const void* a, const void* b) {
-	triangle_t triangleA = *((const triangle_t*)a);
-	triangle_t triangleB = *((const triangle_t*)b);
-
-	if (triangleA.avg_depth < triangleB.avg_depth)
-		return 1;
-	if (triangleA.avg_depth > triangleB.avg_depth)
-		return -1;
-
-	return 0;
-}
-
 void draw_mesh(void) {
 	vec2_int translation = { window_width / 2,window_height / 2 };
 
-	int triangles_length = array_length(triangles_to_render);
-	qsort(triangles_to_render, triangles_length, sizeof(triangle_t), sort_by_depth);
-	for (size_t i = 0; i < array_length(triangles_to_render); i++)
+	for (size_t i = 0; i < triangles_count; i++)
 	{
 		triangle_t triangle = triangles_to_render[i];
 
@@ -244,13 +235,17 @@ void draw_mesh(void) {
 
 		triangle_int triangle_int = { v1,v2,v3 };
 		if ((view_mode & Filled) != 0) {
-			draw_filled_triangle(triangle_int, triangle.color);
+			draw_filled_triangle(triangle.points[0],
+				triangle.points[1], 
+				triangle.points[2], 
+				triangle.color,
+				triangle.intensity);
 		}
 
 		if ((view_mode & Textured) != 0) {
-			draw_textured_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].u, triangle.texcoords[0].v,
-				triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].u, triangle.texcoords[1].v,
-				triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].u, triangle.texcoords[2].v,
+			draw_textured_triangle(triangle.points[0], triangle.texcoords[0].u, triangle.texcoords[0].v,
+				triangle.points[1], triangle.texcoords[1].u, triangle.texcoords[1].v,
+				triangle.points[2], triangle.texcoords[2].u, triangle.texcoords[2].v,
 				mesh_texture, triangle.intensity);
 		}
 		
@@ -269,8 +264,7 @@ void draw_mesh(void) {
 void render(void) {
 	//draw_grid(0xFF999999); 
 	draw_mesh();
-	array_free(triangles_to_render);
-
+	triangles_count = 0;
 	render_color_buffer();
 	clear_color_buffer(0xFF000000);
 	clear_z_buffer();
@@ -292,6 +286,7 @@ int main(int argc, char* args[]) {
 		render();
 	}
 
+	array_free(triangles_to_render);
 	unload_mesh();
 	unload_texture();
 	destroy_wibndow();
