@@ -231,6 +231,12 @@ void draw_filled_triangle(triangle_int triangle, uint32_t color) {
 	}
 }
 
+void vertex_swap(vertex_projected* a, vertex_projected* b) {
+	vertex_projected temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
 void int_swap(int* a, int* b) {
 	int c = *a;
 	*a = *b;
@@ -243,53 +249,42 @@ void float_swap(float* a, float* b) {
 	*b = c;
 }
 
-void draw_textured_triangle(int x0, int y0, float z0, float w0, float u0, float v0,
-	int x1, int y1, float z1, float w1, float u1, float v1,
-	int x2, int y2, float z2, float w2, float u2, float v2,
+void draw_textured_triangle(vertex_projected vertex0 , float u0, float v0,
+	vertex_projected vertex1, float u1, float v1,
+	vertex_projected vertex2, float u2, float v2,
 	uint32_t* texture, float intensity) {
 
-	if (y0 > y1) {
-		int_swap(&y0, &y1);
-		int_swap(&x0, &x1);
-
-		float_swap(&z0, &z1);
-		float_swap(&w0, &w1);
+	if (vertex0.y > vertex1.y) {
+		vertex_swap(&vertex0, &vertex1);
 
 		float_swap(&u0, &u1);
 		float_swap(&v0, &v1);
 	}
 
-	if (y1 > y2) {
-		int_swap(&y1, &y2);
-		int_swap(&x1, &x2);
-
-		float_swap(&z1, &z2);
-		float_swap(&w1, &w2);
+	if (vertex1.y > vertex2.y) {
+		vertex_swap(&vertex1, &vertex2);
 
 		float_swap(&u1, &u2);
 		float_swap(&v1, &v2);
 	}
 
-	if (y0 > y1) {
-		int_swap(&y0, &y1);
-		int_swap(&x0, &x1);
-
-		float_swap(&z0, &z1);
-		float_swap(&w0, &w1);
+	if (vertex0.y > vertex1.y) {
+		vertex_swap(&vertex0, &vertex1);
 
 		float_swap(&u0, &u1);
 		float_swap(&v0, &v1);
 	}
 
-	vec4_t point_a = { x0,y0,z0,w0 };
-	vec4_t point_b = { x1,y1,z1,w1 };
-	vec4_t point_c = { x2,y2,z2,w2 };
+	v0 = 1 - v0;
+	v1 = 1 - v1;
+	v2 = 1 - v2;
+
 	tex2_t a_uv = { u0,v0 };
 	tex2_t b_uv = { u1,v1 };
 	tex2_t c_uv = { u2,v2 };
 
 	float inv_slope_1 = 0; 
-	if (y1 - y0 != 0)
+	if (vertex1.y - vertex0.y != 0)
 		inv_slope_1 = (float)(x1 - x0) / abs(y1 - y0);
 
 	float inv_slope_2 = 0;
@@ -346,22 +341,26 @@ void draw_texel(int x, int y, vec4_t a, vec4_t b, vec4_t c, tex2_t a_uv, tex2_t 
 	float v;
 	float reciprocal_w;
 
-	u = a_uv.u/a.w * weights.x + b_uv.u /b.w * weights.y + c_uv.u/c.w * weights.z;
-	v = a_uv.v/a.w * weights.x + b_uv.v /b.w * weights.y + c_uv.u/c.w * weights.z;
+	u = a_uv.u / a.w * weights.x + b_uv.u / b.w * weights.y + c_uv.u / c.w * weights.z;
+	v = a_uv.v / a.w * weights.x + b_uv.v / b.w * weights.y + c_uv.v / c.w * weights.z;
 
 	reciprocal_w = 1 / a.w * weights.x + 1 / b.w * weights.y + 1 / c.w * weights.z;
 
 	u /= reciprocal_w;
 	v /= reciprocal_w;
+	reciprocal_w = 1 - reciprocal_w;
+	if (z_buffer[x + y * window_width] > reciprocal_w) {
+		z_buffer[x + y * window_width] = reciprocal_w;
+		// Map the UV coordinate to the full texture width and height
+		int tex_x = abs((int)(u * texture_width)) % texture_width;
+		int tex_y = abs((int)(v * texture_height)) % texture_height;
 
-	int color_index = texture_width * (int)(u * texture_height) + (v * texture_width);
-	if (color_index>=0 && color_index < texture_height * texture_width) {
-		uint32_t color = texture[color_index];
+		//int color_index = texture_width * (int)(u * texture_height) + (v * texture_width);
+		//if (color_index>=0 && color_index < texture_height * texture_width) {
+		uint32_t color = texture[(texture_width * tex_y) + tex_x];
 		vec2_int p1 = { x,y };
-		if (intensity > 0.5) {
-			int c = 10;
-		}
 		draw_pixel(p1, light_apply_intensity(color, intensity));
+		//}
 	}
 }
 

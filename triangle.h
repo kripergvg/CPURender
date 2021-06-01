@@ -28,6 +28,13 @@ typedef struct {
 	vec2_int points[3];
 } triangle_int;
 
+typedef struct {
+	int x;
+	int y; 
+	float z;
+	float w;
+} vertex_projected;
+
 vec3_t get_normal(vec3_t triangle_vertices[3]);
 
 void draw_filled_triangle(triangle_int triangle, uint32_t color);

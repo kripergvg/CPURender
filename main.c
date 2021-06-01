@@ -10,6 +10,7 @@
 #include "matrix.h"
 #include "light.h"
 #include "texture.h"
+#include "upng.h"
 
 triangle_t* triangles_to_render = NULL;
 
@@ -29,19 +30,21 @@ typedef enum ViewModeType {
 } ViewMode;
 
 
-ViewMode view_mode =  Wireframe | Vertices | Filled;
+ViewMode view_mode =  Wireframe | Textured;
 bool culling = false;
 
 void setup(void) {
-	color_buffer = (uint32_t)malloc(sizeof(uint32_t) * window_width * window_height);
+	color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * window_width * window_height);
 
 	color_buffer_texture = SDL_CreateTexture(
 		renderer,
-		SDL_PIXELFORMAT_ARGB8888,
+		SDL_PIXELFORMAT_RGBA32,
 		SDL_TEXTUREACCESS_STREAMING,
 		window_width,
 		window_height
 	);
+
+	z_buffer = (float*)malloc(sizeof(float) * window_width * window_height);
 
 	float xFov = 60 * M_PI / 180;
 	float yFov = 60 * M_PI / 180;
@@ -50,12 +53,13 @@ void setup(void) {
 	float zfar = 100;
 	proj_matrix = mat4_perspective(xFov, yFov, aspect, znear, zfar);
 
-	mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
-	texture_width = 3;
-	texture_height = 3;
+	//mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
+	//texture_width = 64;
+	//texture_height = 64;
 
-	load_cube();
-	//load_obj("E:\s2.obj");
+	//load_cube();
+	load_png_texture_data("./crab.png");
+	load_obj("./crab.obj");
 }
 
 void process_input(void) {
@@ -118,7 +122,7 @@ void update(void) {
 
 	triangles_to_render = NULL;
 
-	//mesh.rotation.y += 0.01;
+	mesh.rotation.y += 0.01;
 	//mesh.rotation.x += 0.01;
 	mesh.translation.z = 5;
 	//mesh.rotation.z += 0.01;
@@ -134,9 +138,9 @@ void update(void) {
 	{
 		face_t mesh_face = mesh.faces[i];
 		vec3_t face_vertices[3];
-		face_vertices[0] = mesh.vertices[mesh_face.a - 1];
-		face_vertices[1] = mesh.vertices[mesh_face.b - 1];
-		face_vertices[2] = mesh.vertices[mesh_face.c - 1];
+		face_vertices[0] = mesh.vertices[mesh_face.a];
+		face_vertices[1] = mesh.vertices[mesh_face.b];
+		face_vertices[2] = mesh.vertices[mesh_face.c];
 
 		triangle_t projected_triangle;
 		projected_triangle.color = mesh_face.color;
@@ -269,6 +273,7 @@ void render(void) {
 
 	render_color_buffer();
 	clear_color_buffer(0xFF000000);
+	clear_z_buffer();
 
 	SDL_RenderPresent(renderer);
 }
@@ -288,6 +293,7 @@ int main(int argc, char* args[]) {
 	}
 
 	unload_mesh();
+	unload_texture();
 	destroy_wibndow();
 
 	return 0;

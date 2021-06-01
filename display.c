@@ -12,6 +12,8 @@ SDL_Renderer* renderer = NULL;
 uint32_t* color_buffer = NULL;
 SDL_Texture* color_buffer_texture = NULL;
 
+float* z_buffer = NULL;
+
 bool initialize_window(void) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		fprintf(stderr, "Couldn't intialize SDL");
@@ -66,6 +68,17 @@ void clear_color_buffer(uint32_t color) {
 		{
 			int index = heightIndex * window_width + widthIndex;
 			color_buffer[index] = color;
+		}
+	}
+}
+
+void clear_z_buffer(void) {
+	for (size_t heightIndex = 0; heightIndex < window_height; heightIndex++)
+	{
+		for (size_t widthIndex = 0; widthIndex < window_width; widthIndex++)
+		{
+			int index = heightIndex * window_width + widthIndex;
+			z_buffer[index] = 1;
 		}
 	}
 }
@@ -131,6 +144,7 @@ void draw_line(int x1, int y1, int x2, int y2, uint32_t color) {
 
 void destroy_wibndow(void) {
 	free(color_buffer);
+	free(z_buffer);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
