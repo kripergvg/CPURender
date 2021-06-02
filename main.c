@@ -37,6 +37,7 @@ ViewMode view_mode =  Wireframe | Textured;
 bool culling = true;
 
 void setup(void) {
+
 	color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * window_width * window_height);
 
 	color_buffer_texture = SDL_CreateTexture(
@@ -62,56 +63,58 @@ void setup(void) {
 	//texture_height = 64;
 
 	//load_cube();
-	load_png_texture_data("./drone.png");
-	load_obj("./drone.obj");
+	load_png_texture_data("./assets/drone.png");
+	load_obj("./assets/drone.obj");
 }
 
 void process_input(void) {
 	SDL_Event event;
-	SDL_PollEvent(&event);
-	switch (event.type)
-	{
-	case SDL_QUIT:
-		is_running = false;
-		break;
-	case SDL_KEYDOWN:
-		if (event.key.keysym.sym == SDLK_ESCAPE) {
-			is_running = false;
-		}
-		else if (event.key.keysym.sym == SDLK_1) {
-			view_mode = Wireframe | Vertices;
-		}
-		else if (event.key.keysym.sym == SDLK_2) {
-			view_mode = Wireframe;
-		}
-		else if (event.key.keysym.sym == SDLK_3) {
-			view_mode = Filled;
-		}
-		else if (event.key.keysym.sym == SDLK_4) {
-			view_mode = Filled | Wireframe;
-		}
-		else if (event.key.keysym.sym == SDLK_5) {
-			view_mode = Textured;
-		}
-		else if (event.key.keysym.sym == SDLK_6) {
-			view_mode = Textured | Wireframe;
-		}
-		else if (event.key.keysym.sym == SDLK_c) {
-			culling = true;
-		}
-		else if (event.key.keysym.sym == SDLK_d) {
-			culling = false;
-		}
-		else if (event.key.keysym.sym == SDLK_w) {
-			mesh.translation.z += 0.05;
-		}
-		else if (event.key.keysym.sym == SDLK_s) {
-			mesh.translation.z -= 0.05;
-		}
-		break;
 
-	default:
-		break;
+	while (SDL_PollEvent(&event)) {
+		switch (event.type)
+		{
+		case SDL_QUIT:
+			is_running = false;
+			break;
+		case SDL_KEYDOWN:
+			if (event.key.keysym.sym == SDLK_ESCAPE) {
+				is_running = false;
+			}
+			else if (event.key.keysym.sym == SDLK_1) {
+				view_mode = Wireframe | Vertices;
+			}
+			else if (event.key.keysym.sym == SDLK_2) {
+				view_mode = Wireframe;
+			}
+			else if (event.key.keysym.sym == SDLK_3) {
+				view_mode = Filled;
+			}
+			else if (event.key.keysym.sym == SDLK_4) {
+				view_mode = Filled | Wireframe;
+			}
+			else if (event.key.keysym.sym == SDLK_5) {
+				view_mode = Textured;
+			}
+			else if (event.key.keysym.sym == SDLK_6) {
+				view_mode = Textured | Wireframe;
+			}
+			else if (event.key.keysym.sym == SDLK_c) {
+				culling = true;
+			}
+			else if (event.key.keysym.sym == SDLK_d) {
+				culling = false;
+			}
+			else if (event.key.keysym.sym == SDLK_w) {
+				mesh.translation.z += 0.05;
+			}
+			else if (event.key.keysym.sym == SDLK_s) {
+				mesh.translation.z -= 0.05;
+			}
+			break;
+
+		default:
+			break;
+		}
 	}
 }
 
@@ -126,7 +129,7 @@ void update(void) {
 	
 	mesh.rotation.y += 0.01;
 	//mesh.rotation.x += 0.01;
-	mesh.translation.z = 5;
+	//mesh.translation.z = 5;
 	//mesh.rotation.z += 0.01;
 
 	//mesh.scale.x += 0.002;

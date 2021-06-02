@@ -45,7 +45,7 @@ vec3_t vec3_add(vec3_t a, vec3_t b);
 vec3_t vec3_sub(vec3_t a, vec3_t b);
 vec3_t vec3_cross(vec3_t a, vec3_t b);
 
-vec2_t vec2_normalized(vec2_t a);
+vec2_t vec2_normalized(vec2_t a, int* zero);
 float vec2_dot(vec2_t a, vec2_t b);
 vec2_t vec2_div(vec2_t a, float n);
 vec2_t vec2_mul(vec2_t a, float n);

@@ -1,6 +1,10 @@
 #include "vector.h"
 #include <math.h>
 
+float degree_to_rad(float degrees) {
+	return degrees * (3.14159265358979323846 / 180);
+}
+
 vec3_t vec3_rotate_x(vec3_t v, float angle) {
 	vec3_t rotated = {
 		v.x,
@@ -76,8 +80,11 @@ vec3_t vec3_cross(vec3_t a, vec3_t b) {
 
 
 
-vec2_t vec2_normalized(vec2_t a) {
+vec2_t vec2_normalized(vec2_t a, int* zero) {
 	float length = vec2_magnitude(a);
+	*zero = length == 0;
+	if (*zero)
+		return a;
 	return vec2_div(a, length);
 }
 
