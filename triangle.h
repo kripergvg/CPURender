@@ -24,6 +24,11 @@ typedef struct {
 } triangle_t;
 
 typedef struct {
+	vec3_t points[3];
+	tex2_t texcoords[3];
+} triangle_f;
+
+typedef struct {
 	vec2_int points[3];
 } triangle_int;
 

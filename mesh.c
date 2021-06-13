@@ -56,7 +56,7 @@ mesh_t mesh = {
 	.faces = NULL,
 	.rotation = {0,0,0},
 	.scale = {1,1,1},
-	.translation = {0,0,5}
+	.translation = {0,0,9}
 };
 
 void load_cube(void) {

@@ -5,7 +5,7 @@
 #include "vector.h"
 #include "triangle.h"
 
-#define FPS 30
+#define FPS 144
 #define FRAME_TARGET_TIME (1000/FPS)
 
 extern int window_width;

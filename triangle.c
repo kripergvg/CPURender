@@ -368,6 +368,8 @@ void draw_texel(int x, int y, vertex_projected a, vertex_projected b, vertex_pro
 	u /= reciprocal_w;
 	v /= reciprocal_w;
 	reciprocal_w = 1 - reciprocal_w;
+	if (x + y * window_width < 0)
+		return;
 	if (z_buffer[x + y * window_width] > reciprocal_w) {
 		z_buffer[x + y * window_width] = reciprocal_w;
 		// Map the UV coordinate to the full texture width and height
@@ -398,4 +400,15 @@ vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
 
 	vec3_t weights = { alpha, beta, gamma };
 	return weights;
+}
+
+
+vec2_t vec2_from_tex2(tex2_t v) {
+	vec2_t result = { v.v,v.u };
+	return result;
+}
+
+tex2_t tex2_from_vec2(vec2_t v) {
+	tex2_t result = { v.y,v.x };
+	return result;
 }

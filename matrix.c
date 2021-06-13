@@ -26,6 +26,23 @@ mat4_t mat4_scale(float x, float y, float z) {
 }
 
 
+mat4_t mat4_look_at(vec3_t eye, vec3_t target, vec3_t up) {
+	vec3_t z = vec3_sub(target, eye);
+	vec3_normalize(&z);
+	vec3_t x = vec3_cross(up, z);
+	vec3_normalize(&x);
+	vec3_t y = vec3_cross(z, x);
+
+	mat4_t view_matrix = { {
+		{x.x,x.y,x.z,-vec3_dot(x,eye)},
+		{y.x,y.y,y.z,-vec3_dot(y,eye)},
+		{z.x,z.y,z.z,-vec3_dot(z,eye)},
+		{0,0,0,1}
+	} };
+
+	return view_matrix;
+}
+
 mat4_t mat4_translation(float x, float y, float z) {
 	mat4_t translation = mat4_identity();
 	translation.m[0][3] = x;
@@ -69,10 +86,10 @@ mat4_t mat4_rotation(float x, float y, float z) {
 	return result;
 }
 
-mat4_t mat4_perspective(float xFov, float yFov, float aspect, float znear, float zfar) {
+mat4_t mat4_perspective(float fov, float aspect, float znear, float zfar) {
 	mat4_t m = { {{0}} };
-	m.m[0][0] = aspect * (1 / tan(xFov / 2));
-	m.m[1][1] = 1 / tan(yFov / 2);
+	m.m[0][0] = aspect * (1 / tan(fov / 2));
+	m.m[1][1] = 1 / tan(fov / 2);
 	m.m[2][2] = zfar / (zfar - znear);
 	m.m[2][3] = (-zfar * znear) / (zfar - znear);
 	m.m[3][2] = 1.0;

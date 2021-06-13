@@ -45,6 +45,12 @@
     <ClCompile Include="upng.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="camera.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clipping.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="display.h">
@@ -72,6 +78,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="upng.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="clipping.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

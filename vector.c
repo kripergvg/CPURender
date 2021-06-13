@@ -25,6 +25,11 @@ vec3_t vec3_rotate_y(vec3_t v, float angle) {
 	return rotated;
 }
 
+vec3_t vec3_new(float x, float y, float z) {
+	vec3_t result = { x,y, z };
+	return result;
+}
+
 vec3_t vec3_rotate_z(vec3_t v, float angle) {
 	vec3_t rotated = {
 		v.x * cos(angle) - v.y * sin(angle),
@@ -38,6 +43,10 @@ vec3_t vec3_rotate_z(vec3_t v, float angle) {
 vec3_t vec3_zero() {
 	vec3_t result = { 0,0,0 };
 	return result;
+}
+
+void vec3_normalize(vec3_t* a) {
+	*a = vec3_normalized(*a);
 }
 
 vec3_t vec3_normalized(vec3_t a) {
@@ -79,6 +88,10 @@ vec3_t vec3_cross(vec3_t a, vec3_t b) {
 }
 
 
+vec2_t vec2_new(float x, float y) {
+	vec2_t result = { x,y };
+	return result;
+}
 
 vec2_t vec2_normalized(vec2_t a, int* zero) {
 	float length = vec2_magnitude(a);
