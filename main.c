@@ -172,6 +172,9 @@ void update(void) {
 	
 	for (size_t i = 0; i < array_length(mesh.faces); i++)
 	{
+	/*	if (i != 4)
+			continue;*/
+
 		face_t mesh_face = mesh.faces[i];
 		vec3_t face_vertices[3];
 		face_vertices[0] = mesh.vertices[mesh_face.a];
@@ -211,9 +214,9 @@ void update(void) {
 				triangle_t projected_triangle;
 				projected_triangle.color = light_apply_intensity(mesh_face.color, intensity);
 				projected_triangle.intensity = intensity;
-				projected_triangle.texcoords[0] = mesh_face.a_uv;
-				projected_triangle.texcoords[1] = mesh_face.b_uv;
-				projected_triangle.texcoords[2] = mesh_face.c_uv;
+				projected_triangle.texcoords[0] = triangle_after_clipping.texcoords[0];
+				projected_triangle.texcoords[1] = triangle_after_clipping.texcoords[1];
+				projected_triangle.texcoords[2] = triangle_after_clipping.texcoords[2];
 
 				for (size_t v_index = 0; v_index < 3; v_index++)
 				{

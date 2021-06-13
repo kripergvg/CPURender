@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include "upng.h"
+#include "vector.h"
 
 typedef struct {
     float u;

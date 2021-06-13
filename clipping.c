@@ -71,7 +71,9 @@ void clip_polygon_against_plane(polygon_t* polygon, int plane) {
 			vec3_t intersection = vec3_add(*previous_vertex, vec3_mul(vec3_sub(*current_vertex, *previous_vertex), t));
 			 
 			inside_vertices[inside_vertices_count] = intersection;
-			inside_texcoords[inside_vertices_count] = tex2_from_vec2(vec2_add(vec2_from_tex2(*current_texcoord), vec2_sub(vec2_from_tex2(*current_texcoord), vec2_mul(vec2_from_tex2(*prevoius_texcoord), t))));
+			vec2_t pervoius_coords = vec2_from_tex2(*prevoius_texcoord);
+			vec2_t current_coords = vec2_from_tex2(*current_texcoord);
+			inside_texcoords[inside_vertices_count] = tex2_from_vec2(vec2_add(pervoius_coords, vec2_mul(vec2_sub(current_coords, pervoius_coords), t)));
 			inside_vertices_count++;
 		}
 
